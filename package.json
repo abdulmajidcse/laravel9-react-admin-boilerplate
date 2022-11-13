@@ -1,0 +1,41 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.2",
+        "@vitejs/plugin-react": "^2.0.1",
+        "alpinejs": "^3.4.2",
+        "autoprefixer": "^10.4.2",
+        "axios": "^0.27",
+        "laravel-vite-plugin": "^0.5.0",
+        "lodash": "^4.17.19",
+        "postcss": "^8.4.6",
+        "tailwindcss": "^3.1.0",
+        "vite": "^3.0.0"
+    },
+    "dependencies": {
+        "@reduxjs/toolkit": "^1.9.0",
+        "@tinymce/tinymce-react": "^4.2.0",
+        "bootstrap": "^4.6.0",
+        "formik": "^2.2.9",
+        "moment": "^2.29.4",
+        "react": "^18.2.0",
+        "react-bootstrap": "^1.6.0",
+        "react-dom": "^18.2.0",
+        "react-fast-marquee": "^1.3.5",
+        "react-loading": "^2.0.3",
+        "react-paginate": "^8.1.3",
+        "react-redux": "^8.0.5",
+        "react-router-dom": "^6.3.0",
+        "react-toastify": "^9.0.8",
+        "styled-components": "^5.3.6",
+        "sweetalert": "^2.1.2",
+        "yup": "^0.32.11"
+    },
+    "resolutions": {
+        "styled-components": "^5"
+    }
+}
