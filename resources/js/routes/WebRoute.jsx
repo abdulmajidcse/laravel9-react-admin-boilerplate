@@ -10,7 +10,6 @@ import ProductCreate from "../pages/auth/product/ProductCreate";
 import ProductEdit from "../pages/auth/product/ProductEdit";
 import AuthProfile from "../pages/auth/AuthProfile";
 import UpdatePassword from "../pages/auth/UpdatePassword";
-import ProductLayout from "../components/layouts/auth/ProductLayout";
 import AuthMiddleware from "../components/middlewares/AuthMiddleware";
 
 const WebRoute = () => {
@@ -26,7 +25,10 @@ const WebRoute = () => {
                     />
 
                     {/* categories routes */}
-                    <Route path="categories" element={<GroupLayout />}>
+                    <Route
+                        path="categories"
+                        element={<GroupLayout roles={["Super Admin"]} />}
+                    >
                         <Route index element={<CategoryList />} />
                         <Route path="create" element={<CategoryCreate />} />
                         <Route
@@ -36,7 +38,10 @@ const WebRoute = () => {
                     </Route>
 
                     {/* products routes */}
-                    <Route path="products" element={<ProductLayout />}>
+                    <Route
+                        path="products"
+                        element={<GroupLayout roles={["Seller"]} />}
+                    >
                         <Route index element={<ProductList />} />
                         <Route path="create" element={<ProductCreate />} />
                         <Route
@@ -44,10 +49,10 @@ const WebRoute = () => {
                             element={<ProductEdit />}
                         />
                     </Route>
-                </Route>
 
-                {/* Not Found /404 */}
-                <Route path="*" element={<ErrorPage />} />
+                    {/* Not Found /404 */}
+                    <Route path="*" element={<ErrorPage />} />
+                </Route>
             </Routes>
         </>
     );
