@@ -6,11 +6,18 @@ import { Form, Button } from "react-bootstrap";
 import * as Yup from "yup";
 import Loading from "../../../components/Loading";
 import { useRef, useEffect, useState } from "react";
+import {
+    useGetAuthUserQuery,
+    useAuthCreateCategoryMutation,
+} from "../../../features/api/apiSlice";
 
 const CategoryCreate = () => {
     const [loading, setLoading] = useState(true);
     const imageRef = useRef(null);
     const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
+
+    const { data: authUser } = useGetAuthUserQuery();
+    const [authCreateCategory] = useAuthCreateCategoryMutation();
 
     const formik = useFormik({
         initialValues: {
@@ -38,21 +45,16 @@ const CategoryCreate = () => {
         }),
         onSubmit: async (values, formikHelpers) => {
             try {
-                const response = await axios.post(
-                    "/webapi/auth/categories",
-                    values,
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                        },
-                    }
-                );
+                const response = await authCreateCategory({
+                    data: values,
+                    token: authUser?.data?.token,
+                }).unwrap();
                 formikHelpers.resetForm();
                 imageRef.current.value = "";
                 formikHelpers.setSubmitting(false);
-                toast.success(response.data.statusMessage);
+                toast.success(response.statusMessage);
             } catch (error) {
-                formikHelpers.setErrors(error.response?.data?.errors);
+                formikHelpers.setErrors(error.data?.errors ?? {});
                 formikHelpers.setSubmitting(false);
             }
         },

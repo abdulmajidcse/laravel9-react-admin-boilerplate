@@ -38,15 +38,6 @@
     <!-- AdminLTE App -->
     <script src="{{ asset('assets/dist/js/adminlte.js') }}"></script>
 
-    <script>
-        // in admin panel (react app) and mobile menu, when click sidebar link auto hide sidebar
-        $(document).ready(function() {
-            $('.sidebar-link').click(function() {
-                $('#sidebar-overlay:visible').click();
-            });
-        });
-    </script>
-
 </body>
 
 </html>

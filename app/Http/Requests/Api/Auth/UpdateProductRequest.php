@@ -17,6 +17,10 @@ class UpdateProductRequest extends FormRequest
      */
     public function authorize()
     {
+        // If user has not Seller role, return 403 response
+        if (!auth()->user()->hasRoles('Seller') || $this->product->user_id != auth()->id()) {
+            return false;
+        }
         return true;
     }
 

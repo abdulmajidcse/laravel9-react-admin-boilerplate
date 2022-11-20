@@ -17,6 +17,10 @@ class StoreProductRequest extends FormRequest
      */
     public function authorize()
     {
+        // If user has not Seller role, return 403 response
+        if (!auth()->user()->hasRoles('Seller')) {
+            return false;
+        }
         return true;
     }
 

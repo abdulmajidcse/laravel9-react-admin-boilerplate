@@ -1,9 +1,15 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useUserHasRoles from "../../hooks/authorization/useUserHasRoles";
 import SidebarMenuDropdown from "./sidebar-menus/SidebarMenuDropdown";
 import SidebarMenuLink from "./sidebar-menus/SidebarMenuLink";
+import $ from "jquery";
 
 const Aside = () => {
+    // when sidebar menu click, automatically hide sidebar for overlay display
+    $(".sidebar-link").click(function () {
+        $("#sidebar-overlay:visible").click();
+    });
+
     const { pathname } = useLocation();
     const isSellerRole = useUserHasRoles("Seller");
     const isSuperAdminRole = useUserHasRoles("Super Admin");

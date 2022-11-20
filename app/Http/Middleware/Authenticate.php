@@ -24,7 +24,7 @@ class Authenticate extends Middleware
             return $next($request);
         }
 
-        if ($request->is('api/*')) {
+        if ($request->is('api/*') || $request->query('needApiToken')) {
             return (new ErrorResource([], 401, "Unauthenticated"))->response()->setStatusCode(401);
         }
 

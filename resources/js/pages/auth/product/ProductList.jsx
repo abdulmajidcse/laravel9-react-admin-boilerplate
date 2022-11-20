@@ -2,78 +2,47 @@ import AuthPageLayout from "../../../components/layouts/AuthPageLayout";
 import Loading from "../../../components/Loading";
 import { Link, useSearchParams } from "react-router-dom";
 import { Table } from "react-bootstrap";
-import { toast } from "react-toastify";
-import swal from "sweetalert";
 import { useState, useEffect } from "react";
 import ReactPaginate from "react-paginate";
+import {
+    useGetAuthUserQuery,
+    useAuthGetProductsQuery,
+} from "../../../features/api/apiSlice";
 
 const ProductList = () => {
     let [searchParams, setSearchParams] = useSearchParams();
     const [loading, setLoading] = useState(true);
-    const [categories, setCategories] = useState([]);
-    const [pageCount, setPageCount] = useState(0);
+    const [pageCount, setPageCount] = useState(1);
     const [itemOffset, setItemOffset] = useState(0);
     const [currentPage, setCurrentPage] = useState(0);
 
+    const { data: authUser } = useGetAuthUserQuery();
+
+    const { data: products, isLoading: isLoadingToGetProducts } =
+        useAuthGetProductsQuery({
+            token: authUser?.data?.token,
+            page: searchParams.get("page") ?? 1,
+        });
+
     useEffect(() => {
         setLoading(true);
-        axios
-            .get(
-                `/webapi/auth/categories?paginate=10&page=${
-                    searchParams.get("page") ?? 1
-                }`
-            )
-            .then(({ data }) => {
-                setCategories(data);
-                setPageCount(data.meta.last_page);
-                setItemOffset(data.meta.from);
-                setCurrentPage(data.meta.current_page - 1);
-                setLoading(false);
-            })
-            .catch((error) => {
-                setCategories([]);
-                setLoading(false);
-            });
-    }, [searchParams]);
+
+        if (products) {
+            setPageCount(products.meta.last_page);
+            setItemOffset(products.meta.from);
+            setCurrentPage(products.meta.current_page - 1);
+            setLoading(false);
+        }
+    }, [products]);
 
     // Invoke when user click to request another page.
     const handlePageClick = (event) => {
         setSearchParams({ page: ++event.selected });
     };
 
-    const deletecategory = (categoryId) => {
-        swal({
-            text: "Are you want to delete?",
-            icon: "warning",
-            buttons: true,
-            dangerMode: true,
-        }).then((willDelete) => {
-            if (willDelete) {
-                setLoading(true);
-                axios
-                    .delete(`/webapi/auth/categories/${categoryId}`)
-                    .then((response) => {
-                        const categoryListUpdated = categories.data?.filter(
-                            (category) => category.id !== categoryId
-                        );
-                        setCategories((prevState) => ({
-                            ...prevState,
-                            data: categoryListUpdated,
-                        }));
-                        toast.success(response.data.statusMessage);
-                        setLoading(false);
-                    })
-                    .catch((error) => {
-                        toast.error(error.message ?? "Failed to delete!");
-                        setLoading(false);
-                    });
-            }
-        });
-    };
-
     return (
         <>
-            <Loading loadingIs={loading} />
+            <Loading loadingIs={loading || isLoadingToGetProducts} />
             <AuthPageLayout
                 leftSection={<h1>Product List</h1>}
                 rightSection={
@@ -91,12 +60,15 @@ const ProductList = () => {
                             <td>SL</td>
                             <td>Name</td>
                             <td>Image</td>
+                            <th>Price</th>
+                            <th>Short Description</th>
+                            <th>Full Description</th>
                             <td>Action</td>
                         </tr>
                     </thead>
                     <tbody>
-                        {categories.data && categories.data.length > 0 ? (
-                            categories.data.map((category, index) => (
+                        {products?.data && products.data.length > 0 ? (
+                            products.data.map((category, index) => (
                                 <tr key={`category_id_${category.id}`}>
                                     <td>{itemOffset + index}</td>
                                     <td>{category.name}</td>
@@ -109,6 +81,9 @@ const ProductList = () => {
                                             alt={category.name}
                                         />
                                     </td>
+                                    <td>{`${category.currency} ${category.price}`}</td>
+                                    <td>{category.short_description}</td>
+                                    <td>{category.full_description}</td>
                                     <td>
                                         <div className="dropdown">
                                             <a
@@ -127,21 +102,11 @@ const ProductList = () => {
                                                 aria-labelledby="dropdownMenuLink"
                                             >
                                                 <Link
-                                                    to={`/auth/categories/${category.id}/edit`}
+                                                    to={`/auth/products/${category.id}/edit`}
                                                     className="dropdown-item"
                                                 >
                                                     Edit
                                                 </Link>
-                                                {/* <Button
-                                                    className="dropdown-item"
-                                                    onClick={() =>
-                                                        deletecategory(
-                                                            category.id
-                                                        )
-                                                    }
-                                                >
-                                                    Delete
-                                                </Button> */}
                                             </div>
                                         </div>
                                     </td>

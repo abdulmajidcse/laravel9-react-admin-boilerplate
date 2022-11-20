@@ -13,9 +13,14 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\SuccessCollection;
 use App\Http\Requests\Api\Auth\StoreProductRequest;
 use App\Http\Requests\Api\Auth\UpdateProductRequest;
+use App\Http\Resources\Auth\ProductResource;
+use App\Http\Resources\ErrorResource;
+use App\Services\FileStorageService;
 
 class ProductController extends Controller
 {
+    use FileStorageService;
+
     /**
      * Display a listing of the resource.
      *
@@ -23,7 +28,12 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::latest()->paginate(intval($request->query('paginate', 10)));
+        // If user has not Seller role, return 403 response
+        if (!auth()->user()->hasRoles('Seller')) {
+            return new ErrorResource([], 403, 'Forbidden');
+        }
+
+        $products = Product::where('user_id', auth()->id())->latest()->paginate(intval($request->query('paginate', 10)));
         return new SuccessCollection($products);
     }
 
@@ -46,7 +56,7 @@ class ProductController extends Controller
         $productData['image'] = $this->fileStorage($productData['image'], 'products');
 
         // category ids
-        $categoryIds = $request->safe()->only('category_ids');
+        $categoryIds = $request->safe()->only('category_ids')['category_ids'];
 
         // start db transaction for product and product-category
         DB::transaction(function () use ($categoryIds, $productData) {
@@ -71,7 +81,12 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return new SuccessResource($product);
+        // If user has not Seller role, return 403 response
+        if (!auth()->user()->hasRoles('Seller') || $product->user_id != auth()->id()) {
+            return (new ErrorResource([], 403, 'Forbidden'))->response()->setStatusCode(403);
+        }
+
+        return new ProductResource($product);
     }
 
     /**
@@ -95,7 +110,7 @@ class ProductController extends Controller
         }
 
         // category ids
-        $categoryIds = $request->safe()->only('category_ids');
+        $categoryIds = $request->safe()->only('category_ids')['category_ids'];
 
         // start db transaction for product and product-category
         DB::transaction(function () use ($categoryIds, $product, $productData) {
@@ -124,6 +139,11 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        // If user has not Seller role, return 403 response
+        if (!auth()->user()->hasRoles('Seller')) {
+            return new ErrorResource([], 403, 'Forbidden');
+        }
+
         Storage::delete($product->image);
         $product->forceDelete();
 

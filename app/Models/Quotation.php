@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Product extends Model
+class Quotation extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -16,19 +16,11 @@ class Product extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'slug',
+        'title',
+        'description',
         'image',
-        'short_description',
-        'full_description',
         'currency',
-        'price',
+        'budget',
         'user_id',
     ];
-
-    // user categories
-    public function categories()
-    {
-        return $this->belongsToMany(Category::class, 'product_categories');
-    }
 }

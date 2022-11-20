@@ -38,16 +38,16 @@ const AuthProfile = () => {
         onSubmit: async (values, formikHelpers) => {
             try {
                 const response = await updateAuthProfile({
-                    ...values,
+                    data: values,
                     token: authUser?.data?.token,
                 }).unwrap();
 
                 formikHelpers.resetForm();
                 formikHelpers.setSubmitting(false);
-                toast.success(response.data.statusMessage);
+                toast.success(response.statusMessage);
                 profileModalClose();
             } catch (error) {
-                formikHelpers.setErrors(error.response?.data?.errors);
+                formikHelpers.setErrors(error.data?.errors ?? {});
                 formikHelpers.setSubmitting(false);
             }
         },

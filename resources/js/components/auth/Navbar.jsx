@@ -1,6 +1,7 @@
 import Loading from "../Loading";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import {
     useGetAuthUserQuery,
     useAuthLogoutMutation,
@@ -15,7 +16,7 @@ export default () => {
         setLoading(true);
         try {
             await authLogout(authUser?.data?.token);
-            await axios.post("/auth/logout");
+            await axios.post(`${import.meta.env.VITE_APP_URL}/auth/logout`);
             location.href = "/auth/login";
         } catch (error) {
             location.href = "/auth/login";

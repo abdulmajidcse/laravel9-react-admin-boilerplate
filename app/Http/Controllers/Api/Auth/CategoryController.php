@@ -37,6 +37,11 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        // If user has not super admin role, return 403 response
+        if (!$request->user()->hasRoles('Super Admin')) {
+            return new ErrorResource([], 403, 'Forbidden');
+        }
+
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:180',
             'image' => ['required', File::types(['jpg', 'jpeg', 'png',])->max(5 * 1024)],
@@ -79,6 +84,11 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
+        // If user has not super admin role, return 403 response
+        if (!$request->user()->hasRoles('Super Admin')) {
+            return new ErrorResource([], 403, 'Forbidden');
+        }
+
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:180',
             'image' => ['nullable', File::types(['jpg', 'jpeg', 'png',])->max(5 * 1024)],
@@ -110,8 +120,13 @@ class CategoryController extends Controller
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Category $category)
+    public function destroy(Request $request, Category $category)
     {
+        // If user has not super admin role, return 403 response
+        if (!$request->user()->hasRoles('Super Admin')) {
+            return new ErrorResource([], 403, 'Forbidden');
+        }
+
         Storage::delete($category->image);
         $category->forceDelete();
 

@@ -1,5 +1,5 @@
 import AuthPageLayout from "../../../components/layouts/AuthPageLayout";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import { Form, Button } from "react-bootstrap";
@@ -7,39 +7,47 @@ import * as Yup from "yup";
 import Loading from "../../../components/Loading";
 import { useRef, useEffect, useState } from "react";
 import ErrorPage from "../../ErrorPage";
+import {
+    useGetAuthUserQuery,
+    useAuthGetCategoryQuery,
+    useAuthUpdateCategoryMutation,
+} from "../../../features/api/apiSlice";
+import imageFormats from "../../../utils/imageFormats";
 
 const CategoryEdit = () => {
     const [loading, setLoading] = useState(true);
     const { categoryId } = useParams();
-    const navigate = useNavigate();
-    const [category, setCategory] = useState({});
     const [notFound, setNotFound] = useState(false);
     const imageRef = useRef(null);
-    const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
+
+    const { data: authUser } = useGetAuthUserQuery();
+
+    const {
+        data: category,
+        isSuccess: isSuccessToGetCategory,
+        isError: isErrorToGetCategory,
+    } = useAuthGetCategoryQuery({
+        token: authUser?.data?.token,
+        id: categoryId,
+    });
+
+    const [authUpdateCategory] = useAuthUpdateCategoryMutation();
 
     useEffect(() => {
         setLoading(true);
 
-        axios
-            .get(`/webapi/auth/categories/${categoryId}`)
-            .then((response) => {
-                setCategory(response.data.data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                setCategory({});
-                setNotFound(true);
-                setLoading(false);
-            });
-        return () => {
-            setCategory({});
-        };
-    }, []);
+        if (isSuccessToGetCategory) {
+            setLoading(false);
+        } else if (isErrorToGetCategory) {
+            setNotFound(true);
+            setLoading(false);
+        }
+    }, [isSuccessToGetCategory, isErrorToGetCategory]);
 
     const formik = useFormik({
         enableReinitialize: true,
         initialValues: {
-            name: category.name ?? "",
+            name: category?.data.name ?? "",
             image: null,
         },
         validationSchema: Yup.object({
@@ -57,29 +65,23 @@ const CategoryEdit = () => {
                     "Not a valid image. Supported only jpg, jpeg and png format.",
                     (value) =>
                         value?.type
-                            ? SUPPORTED_FORMATS.includes(value?.type)
+                            ? imageFormats().includes(value?.type)
                             : true
                 ),
         }),
         onSubmit: async (values, formikHelpers) => {
             try {
-                const response = await axios.post(
-                    `/webapi/auth/categories/${categoryId}`,
-                    { ...values, _method: "put" },
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                        },
-                    }
-                );
+                const response = await authUpdateCategory({
+                    data: values,
+                    id: categoryId,
+                    token: authUser?.data?.token,
+                }).unwrap();
                 formikHelpers.resetForm();
                 imageRef.current.value = "";
                 formikHelpers.setSubmitting(false);
-                toast.success(response.data.statusMessage);
-                // redirect to categories route
-                navigate("/auth/categories");
+                toast.success(response.statusMessage);
             } catch (error) {
-                formikHelpers.setErrors(error.response?.data?.errors);
+                formikHelpers.setErrors(error.data?.errors ?? {});
                 formikHelpers.setSubmitting(false);
             }
         },
@@ -136,7 +138,7 @@ const CategoryEdit = () => {
                                 onBlur={formik.handleBlur}
                             />
 
-                            {SUPPORTED_FORMATS.includes(
+                            {imageFormats().includes(
                                 formik.values.image?.type ?? "None"
                             ) && (
                                 <img
@@ -147,11 +149,11 @@ const CategoryEdit = () => {
                                     height={100}
                                 />
                             )}
-                            {!formik.values.image && category.image && (
+                            {!formik.values.image && category?.data.image && (
                                 <img
                                     src={`${
                                         import.meta.env.VITE_APP_URL
-                                    }/uploads/${category.image}`}
+                                    }/uploads/${category?.data.image}`}
                                     alt="Preview"
                                     height={100}
                                 />

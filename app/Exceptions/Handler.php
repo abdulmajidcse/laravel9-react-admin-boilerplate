@@ -47,13 +47,13 @@ class Handler extends ExceptionHandler
     public function register()
     {
         $this->renderable(function (NotFoundHttpException $e, $request) {
-            if ($request->is('api/*') || $request->is('webapi/*')) {
+            if ($request->is('api/*')) {
                 return (new ErrorResource([], $e->getStatusCode(), 'Not Found'))->response()->setStatusCode($e->getStatusCode());
             }
         });
 
         $this->renderable(function (MethodNotAllowedHttpException $e, $request) {
-            if ($request->is('api/*') || $request->is('webapi/*')) {
+            if ($request->is('api/*')) {
                 return (new ErrorResource([], $e->getStatusCode(), $e->getMessage()))->response()->setStatusCode($e->getStatusCode());
             }
         });

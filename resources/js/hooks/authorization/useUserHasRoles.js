@@ -1,23 +1,17 @@
 import { useGetAuthUserQuery } from "../../features/api/apiSlice";
 
 export default (...roles) => {
-    const {
-        data: authUser,
-        isLoading,
-        isSuccess,
-        isError,
-        error,
-    } = useGetAuthUserQuery();
+    const { data: authUser, isSuccess, isError } = useGetAuthUserQuery();
 
     let status = { isSuccess: false, isAccess: false };
 
     if (isSuccess) {
         let matchRoles = [];
-        matchRoles = authUser.data?.roles?.filter((role) =>
+        matchRoles = authUser?.data?.roles?.filter((role) =>
             roles.includes(role.name)
         );
 
-        if (matchRoles.length > 0) {
+        if (matchRoles?.length > 0) {
             status = { isSuccess: true, isAccess: true };
         } else {
             status = { isSuccess: true, isAccess: false };

@@ -13,10 +13,10 @@ export default () => {
     useEffect(() => {
         if (isLoading) {
             setIsAuth(false);
-        } else if (!isLoading && !isSuccess && isError) {
-            location.href = "/auth/login";
-        } else {
+        } else if (isSuccess) {
             setIsAuth(true);
+        } else if (isError) {
+            window.location.href = "/auth/login";
         }
     }, [isLoading, isSuccess, isError]);
 

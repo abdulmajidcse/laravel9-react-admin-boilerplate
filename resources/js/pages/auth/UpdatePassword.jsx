@@ -5,9 +5,21 @@ import { Form, Button } from "react-bootstrap";
 import * as Yup from "yup";
 import Loading from "../../components/Loading";
 import { useEffect, useState } from "react";
+import {
+    useGetAuthUserQuery,
+    useUpdateAuthPasswordMutation,
+} from "./../../features/api/apiSlice";
 
 const UpdatePassword = () => {
     const [loading, setLoading] = useState(true);
+
+    const {
+        data: authUser,
+        isLoading: isGetAuthUserLoading,
+        isError: isGetAuthUserError,
+    } = useGetAuthUserQuery();
+
+    const [updateAuthPassword] = useUpdateAuthPasswordMutation();
 
     const formik = useFormik({
         initialValues: {
@@ -28,15 +40,15 @@ const UpdatePassword = () => {
         }),
         onSubmit: async (values, formikHelpers) => {
             try {
-                const response = await axios.post(
-                    "/webapi/auth/update-password",
-                    { ...values, _method: "put" }
-                );
+                const response = await updateAuthPassword({
+                    data: values,
+                    token: authUser?.data?.token,
+                }).unwrap();
                 formikHelpers.resetForm();
                 formikHelpers.setSubmitting(false);
-                toast.success(response.data.statusMessage);
+                toast.success(response.statusMessage);
             } catch (error) {
-                formikHelpers.setErrors(error.response?.data?.errors);
+                formikHelpers.setErrors(error.data?.errors ?? {});
                 formikHelpers.setSubmitting(false);
             }
         },
